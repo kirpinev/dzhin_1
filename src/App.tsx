@@ -118,13 +118,17 @@ const boosts: Array<Boost> = [
 export const App = () => {
   const [loading, setLoading] = useState(false);
   const [thxShow, setThx] = useState(LS.getItem(LSKeys.ShowThx, false));
-  const [step, setStep] = useState(1);
-  const [progressValue, setProgressValue] = useState(25);
+  const [step, setStep] = useState(LS.getItem(LSKeys.Step, false) ? 3 : 1);
+  const [progressValue, setProgressValue] = useState(
+    LS.getItem(LSKeys.Step, false) ? 100 : 25,
+  );
   const [name, setName] = useState("");
   const [amount, setAmount] = useState(0);
   const [amountString, setAmountString] = useState("");
   const [wish, setWish] = useState("");
-  const [wishes, setWishes] = useState<{ wish: string; amount: string }[]>([]);
+  const [wishes, setWishes] = useState<{ wish: string; amount: string }[]>(
+    LS.getItem(LSKeys.Wishes, []) || [],
+  );
   const [addWish, setAddWish] = useState(true);
   const [popupText, setPopupText] = useState("");
   const [expanded, setExpanded] = useState(false);
@@ -298,7 +302,9 @@ export const App = () => {
               <Gap size={32} />
 
               <div>
-                <div style={{display: "flex", justifyContent: "space-between"}}>
+                <div
+                  style={{ display: "flex", justifyContent: "space-between" }}
+                >
                   <Typography.Text tag="p" view="primary-medium" weight="bold">
                     Мои желания
                   </Typography.Text>
@@ -312,23 +318,23 @@ export const App = () => {
               </div>
 
               {wishes.length > 0 && !addWish && (
-                  <>
-                    <div
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "0.5rem",
-                        }}
-                    >
-                      {wishes.map((item) => {
-                        return (
-                            <div
-                                className={appSt.gift}
-                                key={item.amount + item.wish}
-                            >
-                              <div>
-                                <Typography.Text
-                                    tag="p"
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    {wishes.map((item) => {
+                      return (
+                        <div
+                          className={appSt.gift}
+                          key={item.amount + item.wish}
+                        >
+                          <div>
+                            <Typography.Text
+                              tag="p"
                               view="primary-medium"
                               style={{ marginBottom: "4px" }}
                             >
@@ -475,7 +481,7 @@ export const App = () => {
             <Typography.Text tag="p" view="primary-medium" weight="bold">
               Мои желания
             </Typography.Text>
-            {wishes.length > 0 && !addWish && (
+
               <>
                 <div
                   style={{
@@ -512,7 +518,6 @@ export const App = () => {
                   })}
                 </div>
               </>
-            )}
 
             <Gap size={32} />
 
@@ -641,6 +646,8 @@ export const App = () => {
             view="primary"
             onClick={() => {
               setStep(3);
+              LS.setItem(LSKeys.Step, true);
+              LS.setItem(LSKeys.Wishes, wishes);
               setProgressValue(100);
             }}
           >
