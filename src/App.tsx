@@ -612,7 +612,6 @@ export const App = () => {
           trimTitle={false}
           open={expanded}
           onClose={() => setExpanded(false)}
-          initialHeight="full"
           title={
             <Typography.Text tag="p" view="primary-medium">
               {popupText}
