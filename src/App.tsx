@@ -303,7 +303,7 @@ export const App = () => {
                     Мои желания
                   </Typography.Text>
                   <Typography.Text tag="p" view="primary-medium">
-                    {wishes.length}/6
+                    {wishes.length}/4
                   </Typography.Text>
                 </div>
                 <Typography.Text tag="p" view="primary-small" color="secondary">
@@ -360,7 +360,7 @@ export const App = () => {
                 </>
               )}
 
-              {!addWish && wishes.length < 6 && (
+              {!addWish && wishes.length < 4 && (
                 <>
                   {wishes.length > 0 && <Gap size={16} />}
                   <div className={appSt.options}>
