@@ -297,33 +297,38 @@ export const App = () => {
 
               <Gap size={32} />
 
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography.Text tag="p" view="primary-medium" weight="bold">
-                  Мои желания
-                </Typography.Text>
-                <Typography.Text tag="p" view="primary-medium">
-                  {wishes.length}/6
+              <div>
+                <div style={{display: "flex", justifyContent: "space-between"}}>
+                  <Typography.Text tag="p" view="primary-medium" weight="bold">
+                    Мои желания
+                  </Typography.Text>
+                  <Typography.Text tag="p" view="primary-medium">
+                    {wishes.length}/6
+                  </Typography.Text>
+                </div>
+                <Typography.Text tag="p" view="primary-small" color="secondary">
+                  Добавьте до 4х желаний, остальное можно добавить потом
                 </Typography.Text>
               </div>
 
               {wishes.length > 0 && !addWish && (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "0.5rem",
-                    }}
-                  >
-                    {wishes.map((item) => {
-                      return (
-                        <div
-                          className={appSt.gift}
-                          key={item.amount + item.wish}
-                        >
-                          <div>
-                            <Typography.Text
-                              tag="p"
+                  <>
+                    <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "0.5rem",
+                        }}
+                    >
+                      {wishes.map((item) => {
+                        return (
+                            <div
+                                className={appSt.gift}
+                                key={item.amount + item.wish}
+                            >
+                              <div>
+                                <Typography.Text
+                                    tag="p"
                               view="primary-medium"
                               style={{ marginBottom: "4px" }}
                             >
@@ -602,6 +607,7 @@ export const App = () => {
           trimTitle={false}
           open={expanded}
           onClose={() => setExpanded(false)}
+          initialHeight="full"
           title={
             <Typography.Text tag="p" view="primary-medium">
               {popupText}
