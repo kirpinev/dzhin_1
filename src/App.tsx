@@ -26,6 +26,7 @@ import { AmountInput } from "@alfalab/core-components/amount-input";
 import { Status } from "@alfalab/core-components/status";
 import { Switch } from "@alfalab/core-components/switch";
 import { BottomSheet } from "@alfalab/core-components/bottom-sheet";
+import { sendBoostToGA, sendWishToGA } from "./utils/events.ts";
 
 interface Boost {
   image: string;
@@ -116,7 +117,6 @@ const boosts: Array<Boost> = [
 ];
 
 export const App = () => {
-  const [loading, setLoading] = useState(false);
   const [thxShow, setThx] = useState(LS.getItem(LSKeys.ShowThx, false));
   const [step, setStep] = useState(LS.getItem(LSKeys.Step, false) ? 3 : 1);
   const [progressValue, setProgressValue] = useState(
@@ -139,6 +139,9 @@ export const App = () => {
   const [checked5, setChecked5] = useState<boolean>(false);
   const [checked6, setChecked6] = useState<boolean>(false);
 
+  const [isWishSending, setIsWishSending] = useState(false);
+  const [isBoostSending, setIsBoostSending] = useState(false);
+
   const getChecked = (index: number) => {
     const checkedArray = [
       { checked: checked1, setChecked: setChecked1 },
@@ -152,12 +155,59 @@ export const App = () => {
     return checkedArray[index];
   };
 
+  const getBoosts = () => {
+    const checkedArray = [
+      { checked: checked1, value: "Откройте Альфа-Вклад" },
+      { checked: checked2, value: "Откройте Альфа-Счёт" },
+      { checked: checked3, value: "Откройте кредитную карту" },
+      { checked: checked4, value: "Порекомендуйте карту друзьям" },
+      { checked: checked5, value: "Используйте выгоду от кэшбэка" },
+      {
+        checked: checked6,
+        value: "Узнайте о выгодных предложениях от партнеров",
+      },
+    ];
+
+    return checkedArray
+      .filter((item) => item.checked)
+      .map((item) => item.value)
+      .join(",");
+  };
+
   const submit = () => {
-    setLoading(true);
-    Promise.resolve().then(() => {
+    setIsBoostSending(true);
+    sendBoostToGA({
+      wishlist_name: name,
+      wishlist_items: wishes
+        .map((wish) => `${wish.wish} - ${wish.amount} руб.`)
+        .join(","),
+      boost_list: getBoosts(),
+    }).then(() => {
       LS.setItem(LSKeys.ShowThx, true);
       setThx(true);
-      setLoading(false);
+      setIsBoostSending(false);
+    });
+  };
+
+  const sendWishGA = () => {
+    setIsWishSending(true);
+    sendWishToGA({
+      wishlist_name: name,
+      wishlist_items: wishes
+        .map((wish) => `${wish.wish} - ${wish.amount} руб.`)
+        .join(","),
+    }).then(() => {
+      setStep(3);
+      LS.setItem(LSKeys.Step, true);
+      LS.setItem(LSKeys.Wishes, wishes);
+      setProgressValue(100);
+      setIsWishSending(false);
+    });
+  };
+
+  const sendWish = () => {
+    window.gtag("event", "wish_add_click", {
+      variant_name: "dzhin_1",
     });
   };
 
@@ -448,6 +498,7 @@ export const App = () => {
                     setAmount(0);
                     setAmountString("");
                     setProgressValue(75);
+                    sendWish();
                   }}
                   disabled={!wish || amount === 0}
                   view={"primary"}
@@ -482,42 +533,42 @@ export const App = () => {
               Мои желания
             </Typography.Text>
 
-              <>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "0.5rem",
-                  }}
-                >
-                  {wishes.map((item) => {
-                    return (
-                      <div
-                        className={appSt.finalWish}
-                        key={item.amount + item.wish}
-                      >
-                        <div>
-                          <Typography.Text
-                            tag="p"
-                            view="primary-medium"
-                            style={{ marginBottom: "4px" }}
-                          >
-                            {item.wish}
-                          </Typography.Text>
-                          <Typography.Text
-                            tag="p"
-                            view="primary-small"
-                            color="secondary"
-                            style={{ marginBottom: 0 }}
-                          >
-                            {item.amount} руб.
-                          </Typography.Text>
-                        </div>
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "0.5rem",
+                }}
+              >
+                {wishes.map((item) => {
+                  return (
+                    <div
+                      className={appSt.finalWish}
+                      key={item.amount + item.wish}
+                    >
+                      <div>
+                        <Typography.Text
+                          tag="p"
+                          view="primary-medium"
+                          style={{ marginBottom: "4px" }}
+                        >
+                          {item.wish}
+                        </Typography.Text>
+                        <Typography.Text
+                          tag="p"
+                          view="primary-small"
+                          color="secondary"
+                          style={{ marginBottom: 0 }}
+                        >
+                          {item.amount} руб.
+                        </Typography.Text>
                       </div>
-                    );
-                  })}
-                </div>
-              </>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
 
             <Gap size={32} />
 
@@ -642,13 +693,9 @@ export const App = () => {
           <ButtonMobile
             disabled={wishes.length === 0 || name.length === 0}
             block
+            loading={isWishSending}
             view="primary"
-            onClick={() => {
-              setStep(3);
-              LS.setItem(LSKeys.Step, true);
-              LS.setItem(LSKeys.Wishes, wishes);
-              setProgressValue(100);
-            }}
+            onClick={sendWishGA}
           >
             Создать вишлист
           </ButtonMobile>
@@ -657,7 +704,12 @@ export const App = () => {
 
       {step === 3 && (
         <div className={appSt.bottomBtnThx}>
-          <ButtonMobile block view="primary" loading={loading} onClick={submit}>
+          <ButtonMobile
+            block
+            view="primary"
+            loading={isBoostSending}
+            onClick={submit}
+          >
             Далее
           </ButtonMobile>
         </div>
