@@ -211,6 +211,12 @@ export const App = () => {
     });
   };
 
+  const clickStart = () => {
+    window.gtag("event", "dzhin_start_click", {
+      variant_name: "dzhin_1",
+    });
+  };
+
   if (thxShow) {
     return <ThxLayout />;
   }
@@ -681,6 +687,7 @@ export const App = () => {
             onClick={() => {
               setStep(2);
               setProgressValue(50);
+              clickStart();
             }}
           >
             Начать
